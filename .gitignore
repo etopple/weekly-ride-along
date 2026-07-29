@@ -1,0 +1,10 @@
+# Never commit a real recipient list or send log — they are customer PII.
+reference/recipients.json
+recipients.json
+sent/
+drafts/
+
+# Local
+.env
+__pycache__/
+*.pyc

@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ride-Along recipient list",
+  "description": "Cached recipient list. Refresh monthly, not per send. A human eyeballs it before the first send and after every refresh — the reference implementation's list contained the wrong contact at the right company, and that week's lead story was the other person's incident.",
+  "type": "object",
+  "required": ["generated", "source", "status", "clients", "prospects"],
+  "properties": {
+    "generated": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this list was last refreshed from source systems."
+    },
+    "source": {
+      "type": "string",
+      "description": "How the list was derived — the query, in words. Future-you will want this."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["awaiting review — do not send", "approved"],
+      "description": "Gate. A freshly generated list is never sendable until a human approves it."
+    },
+    "exclusions": {
+      "type": "array",
+      "description": "Brands, business lines, or company types that must never receive this edition. Encode exclusions as data so they survive a change of operator.",
+      "items": { "type": "string" }
+    },
+    "clients": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/recipient" }
+    },
+    "prospects": {
+      "type": "array",
+      "description": "WARM ONLY — people met, quoted, or in an open opportunity. Cold lists belong in a different machine: personal sends from a human mailbox to a cold list is a deliverability and CAN-SPAM problem.",
+      "items": { "$ref": "#/definitions/recipient" }
+    }
+  },
+  "definitions": {
+    "recipient": {
+      "type": "object",
+      "required": ["company", "name", "email", "basis"],
+      "properties": {
+        "company": { "type": "string" },
+        "company_id": {
+          "description": "ID in your CRM/PSA, so the row can be re-derived.",
+          "type": ["integer", "string"]
+        },
+        "name": { "type": "string" },
+        "first_name": {
+          "type": "string",
+          "description": "Used for the personalized greeting. Derive it once, here — not at send time."
+        },
+        "title": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "contact_id": { "type": ["integer", "string"] },
+        "basis": {
+          "type": "string",
+          "description": "Why this person is on the list — e.g. 'decision-maker', 'hand-added <date>', 'met at <event> <date>', 'open opportunity #NNNN'. Every row must justify itself. Rows that can't are how a warm list quietly becomes a cold one."
+        },
+        "unsubscribed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Never delete an unsubscribe — mark it, so a list refresh can't resurrect it."
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
